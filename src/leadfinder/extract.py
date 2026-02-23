@@ -11,7 +11,7 @@ from urllib.parse import quote_plus, urlparse
 
 from selectolax.parser import HTMLParser
 
-from leadfinder.constants import ALLOWED_EMAIL_PATTERNS, ROLE_HINTS
+from leadfinder.constants import ALLOWED_EMAIL_PATTERNS, PERSON_ROLE_KEYWORDS, ROLE_HINTS
 
 # Public inbox / explicit email pattern (no guessing)
 EMAIL_RE = re.compile(
@@ -88,6 +88,69 @@ def _score_email(local_part: str, role_hint: str) -> int:
 def _is_allowed_public_email(email: str) -> bool:
     local = email.split("@")[0].lower() if "@" in email else ""
     return any(local.startswith(p.replace("@", "")) for p in ALLOWED_EMAIL_PATTERNS)
+
+
+def _is_generic_inbox(email: str) -> bool:
+    """True if this is a generic inbox (info@, contact@, etc.), not a person."""
+    return _is_allowed_public_email(email)
+
+
+def _domain_from_url(url: str) -> str:
+    """Return hostname (domain) from URL, normalized to lowercase without www."""
+    netloc = urlparse(url).netloc.lower()
+    return netloc[4:] if netloc.startswith("www.") else netloc
+
+
+def extract_person_emails(html: str, page_url: str) -> list[ExtractedLead]:
+    """Find mailto: links where link text or context suggests a person in charge of partnerships/sponsorship.
+    Only stores explicitly shown emails; only accepts addresses at the same domain as the page."""
+    out: list[ExtractedLead] = []
+    parser = HTMLParser(html)
+    page_domain = _domain_from_url(page_url)
+    role_hint = _path_role_hint(page_url)
+    mailto_re = re.compile(r"^mailto:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})", re.IGNORECASE)
+    seen: set[str] = set()
+
+    for node in parser.tags("a"):
+        href = (node.attributes.get("href") or "").strip()
+        if not href.lower().startswith("mailto:"):
+            continue
+        m = mailto_re.match(href.split("?")[0])
+        if not m:
+            continue
+        email = m.group(1)
+        if email in seen:
+            continue
+        email_domain = email.split("@")[-1].lower() if "@" in email else ""
+        if email_domain != page_domain and not page_domain.endswith("." + email_domain) and not email_domain.endswith("." + page_domain):
+            continue
+        if _is_generic_inbox(email):
+            continue
+        link_text = (node.text(deep=False) or "").strip() or ""
+        parent = node.parent
+        context_parts = [link_text]
+        if parent:
+            context_parts.append((parent.text(deep=False) or "").strip())
+            if parent.parent:
+                context_parts.append((parent.parent.text(deep=False) or "").strip())
+        context = " ".join(context_parts).lower()
+        path_lower = urlparse(page_url).path.lower()
+        page_has_role = any(kw in path_lower for kw in PERSON_ROLE_KEYWORDS)
+        if not page_has_role and not any(kw in context for kw in PERSON_ROLE_KEYWORDS):
+            continue
+        seen.add(email)
+        snippet = _snippet(link_text or context[:120])
+        out.append(
+            ExtractedLead(
+                contact_route_type="email",
+                contact_value=email,
+                contact_role_hint=f"Person ({role_hint})",
+                confidence=75,
+                source_url=page_url,
+                evidence_snippet=snippet or f"Mailto: {email}",
+            )
+        )
+    return out
 
 
 def extract_forms(html: str, page_url: str) -> list[ExtractedLead]:
@@ -243,6 +306,7 @@ def extract_all(html: str, page_url: str) -> list[ExtractedLead]:
     out: list[ExtractedLead] = []
     out.extend(extract_forms(html, page_url))
     out.extend(extract_emails(html, page_url))
+    out.extend(extract_person_emails(html, page_url))
     out.extend(extract_phones(html, page_url))
     out.extend(extract_linkedin(html, page_url))
     out.extend(extract_address(html, page_url))

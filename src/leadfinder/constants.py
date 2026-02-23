@@ -65,5 +65,12 @@ ALLOWED_EMAIL_PATTERNS = [
     "contact@",
 ]
 
+# Keywords that suggest "person in charge" of partnerships/sponsorship (for mailto extraction)
+PERSON_ROLE_KEYWORDS = [
+    "partnership", "partnerships", "sponsorship", "sponsor", "community",
+    "donations", "donate", "csr", "marketing", "events", "outreach",
+    "director", "manager", "lead", "coordinator", "head of", "contact",
+]
+
 DEFAULT_RATE_LIMIT_PER_DOMAIN = 1.0  # requests per second
 MAX_CRAWL_DEPTH = 2
