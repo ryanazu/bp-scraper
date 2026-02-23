@@ -15,7 +15,6 @@ build/
 
 # Project data (regenerate with: leadfinder run input.csv --out leads.db && leadfinder export leads.db --out leads.csv)
 *.db
-leads.csv
 berkeley_project_leads*.csv
 berkeley_project_leads*.db
 
