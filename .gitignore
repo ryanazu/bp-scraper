@@ -1,0 +1,25 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Project data (regenerate with: leadfinder run input.csv --out leads.db && leadfinder export leads.db --out leads.csv)
+*.db
+leads.csv
+berkeley_project_leads*.csv
+berkeley_project_leads*.db
+
+# Test / cache
+.pytest_cache/
+.coverage
+htmlcov/

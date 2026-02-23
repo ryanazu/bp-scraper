@@ -1,0 +1,7 @@
+company_name,contact_type,contact_value,source_url,notes
+Clif Bar,form,https://www.clifbar.com/contact-us,https://www.clifbar.com/contact-us,Contact form; "90 days advanced notice" for new sponsorships
+Clif Bar,phone,1-866-805-2879,https://www.clifbar.com/contact-us,Customer/partnership inquiries
+Patagonia,form,https://www.patagonia.com/contact,https://www.patagonia.com/contact,Contact form; also /sponsorship and /donate pages
+Patagonia,linkedin,https://www.linkedin.com/search/results/companies/?keywords=Patagonia,,Fallback company search
+REI,linkedin,https://www.linkedin.com/search/results/companies/?keywords=REI,,Site returned 403; use LinkedIn or REI community grants page manually
+Ben & Jerry's,linkedin,https://www.linkedin.com/search/results/companies/?keywords=Ben+%26+Jerry%27s,,Site returned 403; use LinkedIn or corporate site manually
