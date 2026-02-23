@@ -196,3 +196,50 @@ class LeadStore:
             w.writeheader()
             w.writerows(rows)
         return len(rows)
+
+    def get_refined_leads(self) -> list[dict[str, Any]]:
+        """One row per company: best contact URL (form) and best email for sponsorship/partnership."""
+        all_leads = self.get_all_leads()
+        by_company: dict[tuple[str, str], list[dict[str, Any]]] = {}
+        for r in all_leads:
+            key = (r["company_name"], r["domain"])
+            by_company.setdefault(key, []).append(r)
+
+        refined: list[dict[str, Any]] = []
+        for (company_name, domain), leads in sorted(by_company.items(), key=lambda x: (x[0][0], x[0][1])):
+            best_url = ""
+            best_email = ""
+            for r in leads:
+                if r["contact_route_type"] == "form" and not best_url:
+                    best_url = r["contact_value"]
+                if r["contact_route_type"] == "email" and not best_email:
+                    best_email = r["contact_value"]
+            if not best_url:
+                for r in leads:
+                    if r["contact_route_type"] == "linkedin":
+                        best_url = r["contact_value"]
+                        break
+            refined.append({
+                "company_name": company_name,
+                "domain": domain,
+                "best_contact_url": best_url,
+                "best_contact_email": best_email,
+            })
+        return refined
+
+    def export_refined_csv(self, out_path: str | Path) -> int:
+        """Export one row per company with single best contact URL and best email."""
+        import csv
+        rows = self.get_refined_leads()
+        if not rows:
+            return 0
+        out_path = Path(out_path)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(out_path, "w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(
+                f,
+                fieldnames=["company_name", "domain", "best_contact_url", "best_contact_email"],
+            )
+            w.writeheader()
+            w.writerows(rows)
+        return len(rows)

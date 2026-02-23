@@ -124,8 +124,9 @@ def run(
 @app.command()
 def export(
     db: Path = typer.Argument(..., help="SQLite DB path (e.g. leads.db)"),
-    format: str = typer.Option("csv", "--format", "-f", help="Export format (csv)"),
+    format: str = typer.Option("csv", "--format", "-f", help="Export format (csv or refined-csv)"),
     out: Path = typer.Option(Path("leads.csv"), "--out", "-o", help="Output file path"),
+    refined: bool = typer.Option(False, "--refined", "-r", help="One row per company: best contact URL + best email only"),
     verbose: bool = typer.Option(False, "--verbose", "-v"),
 ) -> None:
     """Export leads from SQLite to CSV and print ranked list."""
@@ -136,13 +137,35 @@ def export(
 
     store = LeadStore(db)
     store.init_schema()
-    leads = store.get_all_leads()
 
+    if refined or format == "refined-csv":
+        leads = store.get_refined_leads()
+        n = store.export_refined_csv(out)
+        console.print(f"[green]Exported {n} refined rows (one per company) to {out}[/green]")
+        if leads:
+            table = Table(title="Refined leads (best contact URL + best email per company)")
+            table.add_column("Company", style="cyan")
+            table.add_column("Domain", style="dim")
+            table.add_column("Best contact URL", style="green", max_width=45)
+            table.add_column("Best email", style="yellow", max_width=35)
+            for r in leads[:50]:
+                table.add_row(
+                    r["company_name"],
+                    r["domain"],
+                    (r["best_contact_url"] or "")[:45] + ("..." if len(r["best_contact_url"] or "") > 45 else ""),
+                    r["best_contact_email"] or "",
+                )
+            console.print(table)
+            if len(leads) > 50:
+                console.print(f"... and {len(leads) - 50} more (see {out})")
+        return
+
+    leads = store.get_all_leads()
     if format == "csv":
         n = store.export_csv(out)
         console.print(f"[green]Exported {n} rows to {out}[/green]")
     else:
-        console.print("[yellow]Only csv format is supported.[/yellow]")
+        console.print("[yellow]Only csv or refined-csv format is supported.[/yellow]")
         raise typer.Exit(1)
 
     if leads:
