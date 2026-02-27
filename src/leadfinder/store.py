@@ -243,3 +243,27 @@ class LeadStore:
             w.writeheader()
             w.writerows(rows)
         return len(rows)
+
+    def get_refined_leads_for_companies(
+        self, company_keys: set[str], only_with_contacts: bool = True
+    ) -> list[dict[str, Any]]:
+        """Return refined leads only for companies whose name or domain is in company_keys.
+        company_keys: set of normalized strings (lowercase) to match company_name or domain.
+        If only_with_contacts, exclude rows where both best_contact_url and best_contact_email are empty."""
+        refined = self.get_refined_leads()
+        out: list[dict[str, Any]] = []
+        for r in refined:
+            name_norm = (r["company_name"] or "").lower().strip()
+            domain_norm = (r["domain"] or "").lower().strip()
+            # Match if list has exact name/domain, or list entry appears in name/domain (e.g. "whole foods" matches "whole foods market")
+            def matches_keys(n: str, d: str) -> bool:
+                if n in company_keys or d in company_keys:
+                    return True
+                return any(k in n or k in d or n in k or d in k for k in company_keys)
+            if not matches_keys(name_norm, domain_norm):
+                continue
+            if only_with_contacts:
+                if not (r.get("best_contact_url") or r.get("best_contact_email")):
+                    continue
+            out.append(r)
+        return out

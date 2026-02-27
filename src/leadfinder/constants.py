@@ -30,6 +30,8 @@ CONTACT_LIKE_PATHS = [
     "events",
     "get-in-touch",
     "support",
+    "volunteer",
+    "volunteering",
 ]
 
 # Preferred role hints for scoring
@@ -61,15 +63,19 @@ ALLOWED_EMAIL_PATTERNS = [
     "careers@",
     "events@",
     "vendor@",
+    "volunteer@",
+    "volunteering@",
     "info@",
     "contact@",
 ]
 
-# Keywords that suggest "person in charge" of partnerships/sponsorship (for mailto extraction)
+# Keywords for "person in charge" mailto extraction: donations, volunteering, nonprofit communications, VPs only
 PERSON_ROLE_KEYWORDS = [
-    "partnership", "partnerships", "sponsorship", "sponsor", "community",
-    "donations", "donate", "csr", "marketing", "events", "outreach",
-    "director", "manager", "lead", "coordinator", "head of", "contact",
+    "donation", "donations", "donate",
+    "volunteer", "volunteering", "volunteers",
+    "nonprofit", "non-profit", "non profit",
+    "communications", "communication",
+    "vp", "vice president", "v.p.",
 ]
 
 DEFAULT_RATE_LIMIT_PER_DOMAIN = 1.0  # requests per second

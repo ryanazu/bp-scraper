@@ -74,7 +74,9 @@ def _score_email(local_part: str, role_hint: str) -> int:
     local_lower = local_part.lower()
     if "partnership" in local_lower or "sponsorship" in local_lower or "sponsors" in local_lower:
         return 88
-    if "community" in local_lower or "csr" in local_lower or "donations" in local_lower:
+    if "donations" in local_lower or "donate" in local_lower:
+        return 87
+    if "volunteer" in local_lower or "community" in local_lower or "csr" in local_lower:
         return 86
     if "press" in local_lower or "media" in local_lower:
         return 82
@@ -102,8 +104,8 @@ def _domain_from_url(url: str) -> str:
 
 
 def extract_person_emails(html: str, page_url: str) -> list[ExtractedLead]:
-    """Find mailto: links where link text or context suggests a person in charge of partnerships/sponsorship.
-    Only stores explicitly shown emails; only accepts addresses at the same domain as the page."""
+    """Find mailto: links where context suggests a person in charge of donations, volunteering,
+    nonprofit communications, or VPs. Only stores explicitly shown emails at the same domain."""
     out: list[ExtractedLead] = []
     parser = HTMLParser(html)
     page_domain = _domain_from_url(page_url)

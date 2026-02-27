@@ -188,5 +188,92 @@ def export(
             console.print(f"... and {len(leads) - 50} more (see {out})")
 
 
+def _load_company_list(companies_file: Path) -> set[str]:
+    """Load company names/domains from file: one per line, or CSV with company_name/domain column."""
+    path = Path(companies_file)
+    if not path.exists():
+        return set()
+    keys: set[str] = set()
+    with open(path, newline="", encoding="utf-8") as f:
+        try:
+            reader = csv.DictReader(f)
+            if reader.fieldnames:
+                name_col = "company_name" if "company_name" in reader.fieldnames else (reader.fieldnames[0])
+                domain_col = "domain" if "domain" in reader.fieldnames else None
+                for row in reader:
+                    name = (row.get(name_col) or "").strip()
+                    if name:
+                        keys.add(name.lower())
+                    if domain_col and row.get(domain_col):
+                        keys.add((row.get(domain_col) or "").strip().lower())
+                return keys
+        except csv.Error:
+            pass
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            s = line.strip()
+            if s and not s.startswith("#"):
+                keys.add(s.lower())
+    return keys
+
+
+@app.command(name="filter")
+def filter_cmd(
+    db: Path = typer.Argument(..., help="SQLite DB path (e.g. leads.db)"),
+    companies: Path = typer.Option(..., "--companies", "-c", help="File with company names or domains (one per line, or CSV with company_name/domain)"),
+    out: Path = typer.Option(Path("filtered_leads.csv"), "--out", "-o", help="Output refined CSV path"),
+    include_empty: bool = typer.Option(False, "--include-empty", help="Include companies that have no contact (empty row)"),
+    verbose: bool = typer.Option(False, "--verbose", "-v"),
+) -> None:
+    """Export refined CSV with only companies from your list that have contacts in the DB."""
+    _setup_logging(verbose)
+    if not db.exists():
+        console.print(f"[red]DB not found: {db}[/red]")
+        raise typer.Exit(1)
+    if not companies.exists():
+        console.print(f"[red]Companies file not found: {companies}[/red]")
+        raise typer.Exit(1)
+
+    company_keys = _load_company_list(companies)
+    if not company_keys:
+        console.print("[yellow]No companies found in the list.[/yellow]")
+        raise typer.Exit(0)
+
+    store = LeadStore(db)
+    store.init_schema()
+    refined = store.get_refined_leads_for_companies(company_keys, only_with_contacts=not include_empty)
+
+    if not refined:
+        console.print("[yellow]No leads in the DB for any of the listed companies.[/yellow]")
+        raise typer.Exit(0)
+
+    out = Path(out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    import csv as csv_module
+    with open(out, "w", newline="", encoding="utf-8") as f:
+        w = csv_module.DictWriter(
+            f,
+            fieldnames=["company_name", "domain", "best_contact_url", "best_contact_email"],
+        )
+        w.writeheader()
+        w.writerows(refined)
+    console.print(f"[green]Wrote {len(refined)} companies (with contacts) to {out}[/green]")
+    table = Table(title=f"Filtered refined leads ({len(refined)} companies)")
+    table.add_column("Company", style="cyan")
+    table.add_column("Domain", style="dim")
+    table.add_column("Best contact URL", style="green", max_width=40)
+    table.add_column("Best email", style="yellow", max_width=32)
+    for r in refined[:30]:
+        table.add_row(
+            r["company_name"],
+            r["domain"],
+            (r.get("best_contact_url") or "")[:40] + ("..." if len(r.get("best_contact_url") or "") > 40 else ""),
+            r.get("best_contact_email") or "",
+        )
+    console.print(table)
+    if len(refined) > 30:
+        console.print(f"... and {len(refined) - 30} more (see {out})")
+
+
 if __name__ == "__main__":
     app()

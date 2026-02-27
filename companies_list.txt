@@ -1,0 +1,100 @@
+Microsoft
+Google (Alphabet)
+Apple
+Salesforce
+Intel
+IBM
+Cisco
+Dell Technologies
+HP Inc.
+Adobe
+Oracle
+Qualcomm
+SAP
+Zoom
+Intuit
+JPMorgan Chase
+Bank of America
+Wells Fargo
+Goldman Sachs
+Citigroup
+Morgan Stanley
+American Express
+Visa
+Mastercard
+Fidelity Investments
+BlackRock
+Charles Schwab
+Prudential Financial
+MetLife
+Allstate
+Walmart
+Target
+Costco
+Amazon
+Home Depot
+Lowe's
+Best Buy
+Macy's
+Gap Inc.
+Nike
+Starbucks
+McDonald's
+Chick-fil-A
+Whole Foods
+CVS Health
+Johnson & Johnson
+Pfizer
+UnitedHealth Group
+Merck
+Abbott Laboratories
+Medtronic
+Aetna (CVS)
+Humana
+Eli Lilly
+Bristol-Myers Squibb
+PepsiCo
+Coca-Cola
+Nestlé USA
+General Mills
+Kellogg's
+Kraft Heinz
+Unilever
+Tyson Foods
+Anheuser-Busch
+Conagra Brands
+ExxonMobil
+Chevron
+Shell
+BP America
+Duke Energy
+NextEra Energy
+Dominion Energy
+ConocoPhillips
+Southern Company
+Xcel Energy
+3M
+General Electric
+Honeywell
+Caterpillar
+Deere & Company
+Boeing
+Lockheed Martin
+Raytheon Technologies
+Emerson Electric
+Parker Hannifin
+Walt Disney Company
+Comcast/NBCUniversal
+AT&T
+Verizon
+T-Mobile
+Warner Bros. Discovery
+Spotify
+Netflix
+Paramount
+iHeartMedia
+Marriott International
+Hilton Worldwide
+Airbnb
+CBRE Group
+Prologis

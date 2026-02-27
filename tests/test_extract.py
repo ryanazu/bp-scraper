@@ -75,11 +75,11 @@ def test_extract_linkedin():
 
 
 def test_extract_person_emails_same_domain_and_role():
-    """Person in charge: mailto on partnerships page, same domain."""
+    """Person in charge: mailto on donations page, same domain."""
     html = """
-    <p>For partnerships, contact <a href="mailto:jane.smith@company.com">Jane Smith, Director of Partnerships</a>.</p>
+    <p>For donations, contact <a href="mailto:jane.smith@company.com">Jane Smith, Director of Donations</a>.</p>
     """
-    out = extract_person_emails(html, "https://www.company.com/partnerships")
+    out = extract_person_emails(html, "https://www.company.com/donations")
     assert len(out) == 1
     assert out[0].contact_value == "jane.smith@company.com"
     assert "Person" in out[0].contact_role_hint
@@ -89,9 +89,9 @@ def test_extract_person_emails_same_domain_and_role():
 def test_extract_person_emails_ignores_wrong_domain():
     """Do not harvest mailto when email domain does not match page domain."""
     html = """
-    <p>Contact <a href="mailto:other@gmail.com">External contact</a> for partnerships.</p>
+    <p>Contact <a href="mailto:other@gmail.com">External contact</a> for volunteering.</p>
     """
-    out = extract_person_emails(html, "https://company.com/partnerships")
+    out = extract_person_emails(html, "https://company.com/volunteer")
     assert len(out) == 0
 
 
